@@ -1,4 +1,4 @@
-let scene = 0;
+let scene = 6;
 let imgShadow;
 let imgEmptynail;
 let nails1 = [];
@@ -23,12 +23,17 @@ let dropNum = 800;
 var elems = []
 let elemsNum = 20;
 let eyeBackground;
+let closedEyeBackground;
 let donut;
 var openDoor;
 let closeDoor;
 let nail;
 let rain;
-
+let nailsSet = new Set();
+let nailHasPlayed = false;
+let rainHasPlayed = false;
+let rainHasPlayed2 = false;
+let clickAmount = 0;
 
 class Avatar {
   constructor(x, y, scene, diameter) {
@@ -54,27 +59,28 @@ class Avatar {
     ellipse(this.footprintX, this.footprintY-this.diameter/4*3+(sin(frameCount/5)*this.f*3), this.diameter);
 
 
-    if (keyIsPressed && keyCode === UP_ARROW) {  
-      if (this.scene == 1) {
+    
+    if (this.scene == 1) {
+      if ((keyIsPressed && keyCode === UP_ARROW) || (keyIsPressed && keyCode === LEFT_ARROW)) {
         if (this.footprintX > windowWidth/100*65 && this.footprintY > windowHeight/100*53 && this.footprintX < windowWidth && this.footprintY < windowHeight) {
         
           this.footprintX -= this.step;
           this.footprintY = this.footprintX*(16/15)*(windowHeight/windowWidth)-49/300*windowHeight;
-          this.diameter -= 0.3;
+          this.diameter -= 0.5;
           this.f -= 0.01;
   
         } else if (this.footprintX <= windowWidth/100*65 && this.footprintY <= windowHeight/100*53 && this.footprintX > windowWidth/100*48 && this.footprintY > windowHeight/100*48) {
           
           this.footprintX -= this.step;
           this.footprintY = this.footprintX*(5/17)*(windowHeight/windowWidth)+144/425*windowHeight;
-          this.diameter -= 0.1;
+          this.diameter -= 0.3;
           this.f -= 0.01;
           
         } else if (this.footprintX <= windowWidth/100*48 && this.footprintY <= windowHeight/100*48 && this.footprintX > windowWidth/100*35 && this.footprintY > windowHeight/100*45.5) {
           
           this.footprintX -= this.step;
           this.footprintY = this.footprintX*(5/26)*(windowHeight/windowWidth)+126/325*windowHeight;
-          this.diameter -= 0.1;
+          this.diameter -= 0.2;
           this.f -= 0.01;
   
         } else {
@@ -87,22 +93,23 @@ class Avatar {
         if (this.footprintX < 0) {      
           this.tillEnd = true;   
         }
-
       }
+    }
 
-      if (this.scene == 2) {
+    if (this.scene == 2) {
+      if ((keyIsPressed && keyCode === UP_ARROW) || (keyIsPressed && keyCode === RIGHT_ARROW)) {
         if (this.footprintX < windowWidth/100*22 && this.footprintY > windowHeight/100*77 && this.footprintX > 0 && this.footprintY < windowHeight) {
         
           this.footprintX += this.step;
           this.footprintY = this.footprintX*(-1)*(windowHeight/windowWidth)+99/100*windowHeight;
-          this.diameter -= 0.15;
+          this.diameter -= 0.4;
           this.f -= 0.01;
   
         } else if (this.footprintX < windowWidth/100*35 && this.footprintY > windowHeight/100*69 && this.footprintX >= windowWidth/100*22 && this.footprintY <= windowHeight/100*77) {
           
           this.footprintX += this.step;
           this.footprintY = this.footprintX*(-8/13)*(windowHeight/windowWidth)+1177/1300*windowHeight;
-          this.diameter -= 0.15;
+          this.diameter -= 0.2;
           this.f -= 0.01;
           
         } else if (this.footprintX < windowWidth/100*50 && this.footprintY > windowHeight/100*63 && this.footprintX >= windowWidth/100*35 && this.footprintY <= windowHeight/100*69) {
@@ -125,9 +132,10 @@ class Avatar {
           this.tillEnd = true;   
         }
       }
-
-
     }
+
+
+    
 
 
     
@@ -178,7 +186,7 @@ function preload() {
   }
 
   eyeBackground = loadImage('assets/eyeBackground.png');
-
+  closedEyeBackground = loadImage('assets/closedEyeBackground.png');
   
 }
 
@@ -211,10 +219,6 @@ function setup() {
   nail = loadSound("assets/nail.m4a")
   rain = loadSound("assets/rain.m4a")
 
-  
-  // for (var i=0; i<=400; i++) {
-    
-  // }
 }
 
 function draw() {
@@ -237,6 +241,9 @@ function draw() {
       fill(0, 0, 0, transparentCountV);
       transparentCountV += 1;
       rect(0, 0, windowWidth, windowHeight);
+      if (rain.isPlaying()){
+        rain.pause()  
+      }
 
       if (transparentCountV >= 100) {
         scene = 4;
@@ -255,6 +262,9 @@ function draw() {
       transparentCountV2 += 1;
       rect(0, 0, windowWidth, windowHeight);
 
+      if (rain.isPlaying()){
+        rain.pause()   
+      }
       if (transparentCountV2 >= 100) {
         scene = 6;
       }  
@@ -360,8 +370,14 @@ function drawScene2() {
   }
 }
 
+
 // tran1
 function drawScene3() {
+  rain.setVolume(0.1);
+  if (!rain.isPlaying() && !rainHasPlayed) {
+    rain.loop();
+    rainHasPlayed = true;
+  }
   background(0);
   colorMode(HSB, 360, 100, 100);
 
@@ -369,7 +385,6 @@ function drawScene3() {
     drop[i].show();
     drop[i].update();
   }
-
 
   image(maze, 0, 0, windowWidth, windowHeight);
 
@@ -412,6 +427,12 @@ function drawScene4() {
 
 // tran2
 function drawScene5() {
+  rain.setVolume(0.1);
+  if (!rain.isPlaying() && !rainHasPlayed2) {
+    rain.loop();
+    rainHasPlayed2 = true;
+  }
+
   background(0);
   colorMode(HSB, 360, 100, 100);
 
@@ -532,21 +553,55 @@ class Elem {
     rectMode(CENTER);
     stroke(0, 0, 100);
     
+    // if (dist(this.x, this.y, mouseX, mouseY)<windowHeight/2) {
+
+    //   if (dist(this.x, this.y, mouseX, mouseY)<windowHeight/5) { 
+    //     fill(sin(frameCount/1000+PI/10)*360, 90/(windowHeight/5)*dist(this.x, this.y, mouseX, mouseY), 100);
+    //     rect(this.x, this.y, windowHeight/40);
+    //   } else {
+    //     fill(sin(frameCount/1000)*360, 100-90/(windowHeight/2)*dist(this.x, this.y, mouseX, mouseY), 100);
+    //     rect(this.x, this.y, windowHeight/40);
+    //   }
+    
+    // } else {
+    //   fill(sin(frameCount/1000+PI/5)*360, (100-50/(windowHeight/5*4)*this.y)*(mouseY/windowHeight), 100);
+    //   rect(this.x, this.y, windowHeight/40);
+    // }   
+
+    // if (dist(this.x, this.y, mouseX, mouseY)<windowHeight/2) {
+
+    //   if (dist(this.x, this.y, mouseX, mouseY)<windowHeight/5) { 
+    //     fill(sin((frameCount-50000)/1000+PI/10)*360, 90/(windowHeight/5)*dist(this.x, this.y, mouseX, mouseY), 100);
+    //     rect(this.x, this.y, windowHeight/40);
+    //   } else {
+    //     fill(sin((frameCount-50000)/1000)*360, 100-90/(windowHeight/2)*dist(this.x, this.y, mouseX, mouseY), 100);
+    //     rect(this.x, this.y, windowHeight/40);
+    //   }
+    
+    // } else {
+    //   fill(sin((frameCount-50000)/1000+PI/5)*360, (100-50/(windowHeight/5*4)*this.y)*(mouseY/windowHeight), 100);
+    //   rect(this.x, this.y, windowHeight/40);
+    // }  
+
     if (dist(this.x, this.y, mouseX, mouseY)<windowHeight/2) {
 
       if (dist(this.x, this.y, mouseX, mouseY)<windowHeight/5) { 
-        fill(sin(frameCount/1000+PI/10)*360, 90/(windowHeight/5)*dist(this.x, this.y, mouseX, mouseY), 100);
+        fill(sin(frameCount/1000*clickAmount+PI/10)*360, 90/(windowHeight/5)*dist(this.x, this.y, mouseX, mouseY), 100);
         rect(this.x, this.y, windowHeight/40);
       } else {
-        fill(sin(frameCount/1000)*360, 100-90/(windowHeight/2)*dist(this.x, this.y, mouseX, mouseY), 100);
+        fill(sin(frameCount/1000*clickAmount)*360, 100-90/(windowHeight/2)*dist(this.x, this.y, mouseX, mouseY), 100);
         rect(this.x, this.y, windowHeight/40);
       }
     
     } else {
-      fill(sin(frameCount/1000+PI/5)*360, (100-50/(windowHeight/5*4)*this.y)*(mouseY/windowHeight), 100);
+      fill(sin(frameCount/1000*clickAmount+PI/5)*360, (100-50/(windowHeight/5*4)*this.y)*(mouseY/windowHeight), 100);
       rect(this.x, this.y, windowHeight/40);
-    }   
+    }
+    
+    
+
   }
+
 }
 
 let flipList = [];
@@ -560,12 +615,21 @@ function drawScene7() {
     elems[i].display();
     
   }
-  image(eyeBackground, 0, 0, windowWidth, windowHeight);
+  if (mouseIsPressed && clickAmount>0){
+    image(closedEyeBackground, 0, 0, windowWidth, windowHeight);
+  } else {
+    image(eyeBackground, 0, 0, windowWidth, windowHeight);
+  }
+  
 }
 
 // // tran3
 function drawScene8() {
-  
+  rain.setVolume(0.1);
+  if (!rain.isPlaying() && !rainHasPlayed) {
+    rain.loop();
+    rainHasPlayed = true;
+  }
   background(0);
   noStroke();
   fill(40, 30, 100);
@@ -613,12 +677,32 @@ function drawScene9() {
   background(0);
 }
 
+let nailsArr = []
 
 function mousePressed() {
+  if (scene == 7) {
+    // console.log("test test")
+    clickAmount++;
+    console.log(clickAmount)
+    if (clickAmount >= 10){
+      scene = 8;
+      // console.log(scene)
+    }
+    
+  }
 
   if (scene == 8) {
-    scene = 9;
-    closeDoor.play();
+    openDoor.play();
+    // console.log(scene)
+    clickAmount++;
+    console.log(clickAmount)
+    if (clickAmount>=12){
+      
+      scene = 9;
+      closeDoor.play();
+      // console.log(scene)
+    }
+    
   } 
 
   if (scene == 0) {
@@ -627,15 +711,7 @@ function mousePressed() {
   } else if (scene == 1) {
     scene = 2;
     closeDoor.play();
-  } else if (scene == 3 || scene == 5) {
-    // scene = 2;
-    rain.setVolume(0.2);
-    if (rain.isPlaying() ){
-      rain.pause();
-    } else {
-      rain.loop();
-    }
-  }
+  } 
 
   if (scene == 4) {
     // main1
@@ -644,52 +720,78 @@ function mousePressed() {
       scene2Background = random(360);
       colourFlag = true;
       nail.play();
+      nailsSet.add("1")
     } else if (dist(mouseX, mouseY+brush.mainLength/2, windowWidth/100*15.5, windowHeight/20*7) <= 25) {
       loadedNails.push(nails1[2]);
       scene2Background = random(360);
       colourFlag = true;
       nail.play();
+      nailsSet.add("2")
     } else if (dist(mouseX, mouseY+brush.mainLength/2, windowWidth/100*26.5, windowHeight/100*30) <= 25) {
       loadedNails.push(nails1[3]);
       scene2Background = random(360);
       colourFlag = true;
       nail.play();
+      nailsSet.add("3")
     } else if (dist(mouseX, mouseY+brush.mainLength/2, windowWidth/28*11, windowHeight/29*10) <= 25) {
       loadedNails.push(nails1[4]);
       scene2Background = random(360);
       colourFlag = true;
       nail.play();
+      nailsSet.add("4")
     } else if (dist(mouseX, mouseY+brush.mainLength/2, windowWidth/2, windowHeight/100*73) <= 25) {
       loadedNails.push(nails1[5]);
       scene2Background = random(360);
       colourFlag = true;
       nail.play();
+      nailsSet.add("5")
     } else if (dist(mouseX, mouseY+brush.mainLength/2, windowWidth/100*54, windowHeight/100*74) <= 25) {
       loadedNails.push(nails1[6]);
       scene2Background = random(360);
       colourFlag = true;
       nail.play();
+      nailsSet.add("6")
     } else if (dist(mouseX, mouseY+brush.mainLength/2, windowWidth/100*67.5, windowHeight/100*34) <= 25) {
       loadedNails.push(nails1[7]);
       scene2Background = random(360);
       colourFlag = true;
       nail.play();
+      nailsSet.add("7")
     } else if (dist(mouseX, mouseY+brush.mainLength/2, windowWidth/100*79, windowHeight/100*28) <= 25) {
       loadedNails.push(nails1[8]);
       scene2Background = random(360);
       colourFlag = true;
       nail.play();
+      nailsSet.add("8")
     } else if (dist(mouseX, mouseY+brush.mainLength/2, windowWidth/100*86.5, windowHeight/100*34.5) <= 25) {
       loadedNails.push(nails1[9]);
       scene2Background = random(360);
       colourFlag = true;
       nail.play();
+      nailsSet.add("9")
     } else if (dist(mouseX, mouseY+brush.mainLength/2, windowWidth/100*96.5, windowHeight/100*51) <= 25) {
       loadedNails.push(nails1[10]);
       scene2Background = random(360);
       colourFlag = true;
       nail.play();
+      nailsSet.add("10")
     } 
+    // console.log(nailsSet)
+    // console.log(nailsSet.size)
+    
+    setTimeout(function(){
+      if (nailsSet.size==10){
+        // console.log(nail.isPlaying())
+        // console.log(nailHasPlayed)
+        // if (!nail.isPlaying() && !nailHasPlayed) {
+        //   nail.play();
+        //   nailHasPlayed = true;
+        //   console.log("Test Test Test")
+        // }
+        scene = 5
+      }
+    }, 7000)
+    
   }
 
   if (scene == 6) {
@@ -715,13 +817,15 @@ function keyPressed(){
   }
 
   
-    if (keyCode === RIGHT_ARROW && scene == 4) {    
-      scene = 5;      
-    }
+    // if (keyCode === RIGHT_ARROW && scene == 4) { 
       
-    if (keyCode === RIGHT_ARROW && scene == 7) {
-      scene = 8;
-    }
+      
+    //   scene = 5;      
+    // }
+      
+    // if (keyCode === RIGHT_ARROW && scene == 7) {
+    //   scene = 8;
+    // }
   
 
   
