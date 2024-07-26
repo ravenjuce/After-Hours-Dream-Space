@@ -1,4 +1,4 @@
-let scene = 6;
+let scene = 0;
 let imgShadow;
 let imgEmptynail;
 let nails1 = [];
