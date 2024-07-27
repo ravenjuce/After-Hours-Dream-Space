@@ -61,7 +61,7 @@ class Avatar {
 
     
     if (this.scene == 1) {
-      if ((keyIsPressed && keyCode === UP_ARROW) || (keyIsPressed && keyCode === LEFT_ARROW)) {
+      if ((keyIsPressed && keyCode === UP_ARROW) || (keyIsPressed && keyCode === LEFT_ARROW) || mouseIsPressed) {
         if (this.footprintX > windowWidth/100*65 && this.footprintY > windowHeight/100*53 && this.footprintX < windowWidth && this.footprintY < windowHeight) {
         
           this.footprintX -= this.step;
@@ -97,7 +97,7 @@ class Avatar {
     }
 
     if (this.scene == 2) {
-      if ((keyIsPressed && keyCode === UP_ARROW) || (keyIsPressed && keyCode === RIGHT_ARROW)) {
+      if ((keyIsPressed && keyCode === UP_ARROW) || (keyIsPressed && keyCode === RIGHT_ARROW) || mouseIsPressed) {
         if (this.footprintX < windowWidth/100*22 && this.footprintY > windowHeight/100*77 && this.footprintX > 0 && this.footprintY < windowHeight) {
         
           this.footprintX += this.step;
